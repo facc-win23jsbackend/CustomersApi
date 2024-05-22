@@ -1,10 +1,12 @@
 using Customers_WebAPI.Context;
+using Keycloak.AuthServices.Authentication;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-
+builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration); 
+builder.Services.AddAuthorization(); 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -16,6 +18,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
-app.UseAuthorization();
+app.UseAuthentication(); 
+app.UseAuthorization(); 
 app.MapControllers();
 app.Run();
