@@ -59,13 +59,13 @@ namespace Customers_WebAPI.Controllers
 
 
 
-        [HttpPut("{email}")] // UPDATE - Uppdatera en Customer
-        public async Task<IActionResult> UpdateCustomer(string email, [FromBody] CustomerEntity updatedCustomer)
+        [HttpPut("{id}")] // UPDATE - Uppdatera en Customer
+        public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerEntity updatedCustomer)
         {
-            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.Email == email);
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.Id == id);
             if (customer == null)
             {
-                return NotFound($"No customer with email address: {email}, was found.");
+                return NotFound($"No customer with id: {id}, was found.");
             }
 
             // Uppdaterar kundinformation
@@ -85,7 +85,7 @@ namespace Customers_WebAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.Customers.Any(x => x.Email == email))
+                if (!_context.Customers.Any(x => x.Id == id))
                 {
                     return NotFound();
                 }
@@ -100,10 +100,10 @@ namespace Customers_WebAPI.Controllers
 
 
 
-        [HttpDelete("{email}")] // DELETE - Raderar en Customer med Email
-        public async Task<IActionResult> DeleteCustomer(string email)
+        [HttpDelete("{id}")] // DELETE - Raderar en Customer med Email
+        public async Task<IActionResult> DeleteCustomer(int id)
         {
-            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.Email == email);
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.Id == id);
             if (customer == null)
             {
                 return NotFound();
