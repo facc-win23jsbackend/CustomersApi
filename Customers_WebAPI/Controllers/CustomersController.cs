@@ -1,4 +1,5 @@
-﻿using Customers_WebAPI.Context;
+﻿using System.Security.Claims;
+using Customers_WebAPI.Context;
 using Customers_WebAPI.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,12 @@ namespace Customers_WebAPI.Controllers
     public class CustomersController : ControllerBase
     {
         private readonly CustomerContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CustomersController(CustomerContext context)
+        public CustomersController(CustomerContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
 
@@ -23,11 +26,20 @@ namespace Customers_WebAPI.Controllers
         [HttpPost] // CREATE - Skapar en Customer
         public async Task<ActionResult<CustomerEntity>> CreateCustomer([FromBody] CustomerEntity customer)
         {
+            var userId =
+                _httpContextAccessor?.HttpContext?.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+
+            if (userId is null)
+            {
+                return Unauthorized();
+            }
             // Kontrollerar om e-postadressen redan finns i databasen
             if (_context.Customers.Any(x => x.Email == customer.Email))
             {
                 return BadRequest("This Email address is already taken, please use another email. ");
             }
+
+            customer.UserId = userId.Value;
 
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
@@ -45,6 +57,25 @@ namespace Customers_WebAPI.Controllers
 
 
 
+        [HttpGet("user")] // READ - Hämtar en Customer med ett Id
+        public async Task<ActionResult<CustomerEntity>> GetCustomerByUserId()
+        {
+            var userId =
+                _httpContextAccessor?.HttpContext?.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+
+            if (userId is null)
+            {
+                return Unauthorized();
+            }
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId.Value);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            return customer;
+        }
+
         [HttpGet("{id}")] // READ - Hämtar en Customer med ett Id
         public async Task<ActionResult<CustomerEntity>> GetCustomer(int id)
         {
@@ -56,7 +87,6 @@ namespace Customers_WebAPI.Controllers
 
             return customer;
         }
-
 
 
         [HttpPut("{id}")] // UPDATE - Uppdatera en Customer

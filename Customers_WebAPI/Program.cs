@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration); 
+builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthorization(); 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
